@@ -126,7 +126,7 @@ const createStyles = (theme) =>
     },
     scrollContainer: {
       padding: 20,
-      paddingTop: 60,
+      paddingTop: 40,
       alignItems: "center",
     },
     themeToggleButton: {
