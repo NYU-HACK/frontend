@@ -12,6 +12,7 @@ import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext"; // This context should provide verifiedUser
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import BottomMenu from "./BottomMenu";
 
 export default function HomeScreen({ navigation }) {
   const { theme, toggleTheme } = useTheme();
@@ -58,6 +59,7 @@ export default function HomeScreen({ navigation }) {
             onPress={handleLogout} 
           />
         </TouchableOpacity>
+        
         {/* Header: Greeting */}
         <View style={styles.header}>
           <Text style={styles.greeting}>Hello, {verifiedUser?.name}</Text>
@@ -81,7 +83,7 @@ export default function HomeScreen({ navigation }) {
 
           <TouchableOpacity
             style={styles.button}
-            onPress={() => navigation.navigate("Settings")}
+            onPress={() => navigation.navigate("FoodPantry")}
           >
             <Ionicons
               name="restaurant-outline"
@@ -90,6 +92,33 @@ export default function HomeScreen({ navigation }) {
               style={styles.buttonIcon}
             />
             <Text style={styles.buttonText}>Your Pantry</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("Scanner")}
+          >
+            <Ionicons
+              name="hardware-chip-outline"
+              size={24}
+              color={theme.background}
+              style={styles.buttonIcon}
+            />
+            <Text style={styles.buttonText}>AI Chat</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("FoodPantry")}
+          >
+            <Ionicons
+              name="sparkles-outline"
+              size={24}
+              color={theme.background}
+              style={styles.buttonIcon}
+            />
+            <Text style={styles.buttonText}>Recipes</Text>
           </TouchableOpacity>
         </View>
 
@@ -102,6 +131,7 @@ export default function HomeScreen({ navigation }) {
           </Text>
         </View>
       </ScrollView>
+      <BottomMenu />
     </LinearGradient>
   );
 }
@@ -156,7 +186,7 @@ const createStyles = (theme) =>
       paddingVertical: 20,
       paddingHorizontal: 15,
       borderRadius: 10,
-      marginBottom: 30,
+      marginBottom: 10,
       alignItems: "center",
       color: theme.text,
     },
@@ -175,7 +205,7 @@ const createStyles = (theme) =>
       flexDirection: "row",
       justifyContent: "space-between",
       width: "100%",
-      marginBottom: 30,
+      marginBottom: 10,
     },
     button: {
       flex: 1,

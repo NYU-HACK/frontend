@@ -16,6 +16,8 @@ export const lightTheme = {
     warning: '#FFC107',   // Warning (yellow)
     danger: '#DC3545',    // Danger (red)
     contrast: '#000000',  // Extra contrast color if needed
+    activeTint: '#2F80ED',      // Active icon/text color
+    activeBackground: '#E9F3FF' // Light background for active tab
   };
   
   export const darkTheme = {
@@ -34,5 +36,7 @@ export const lightTheme = {
     warning: '#FFC107',   // Warning (yellow)
     danger: '#DC3545',    // Danger (red)
     contrast: '#FFFFFF',  // Extra contrast color if needed
+    activeTint: '#2F80ED',      // Same accent color for dark mode
+    activeBackground: '#2A2A2A' // Dark background for active tab
   };
   

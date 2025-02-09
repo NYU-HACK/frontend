@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,8 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { Button, TextInput } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 // Generic Food Categories with iOS Emojis 🍗🥦🥛🥤🍪
 const categoryEmojis = {
@@ -29,6 +31,7 @@ const categoryEmojis = {
 export default function AddFoodScreen({ route }) {
   const { theme } = useTheme();
   const navigation = useNavigation();
+  const { verifiedUser } = useAuth();
   const { product } = route.params || {};
 
   // Shared inputs
@@ -39,10 +42,20 @@ export default function AddFoodScreen({ route }) {
   // Manual entry state
   const [isManualEntry, setIsManualEntry] = useState(false);
   const [productName, setProductName] = useState(product?.name || "");
-  const [barcodeData, setBarcodeData] = useState(product?.barcodeData || "");
+  const [barcodeData, setBarcodeData] = useState(product?.code || "");
   const [manualCategory, setManualCategory] = useState(
     product?.category || "default"
   );
+  const [price, setPrice] = useState("");
+
+  // Handle input change and format to two decimal points
+  const handlePriceChange = (value) => {
+    // Allow numbers and decimal point, restrict to 2 decimal places
+    const formattedValue = value
+      .replace(/[^0-9.]/g, "")
+      .replace(/^(\d*\.?\d{0,2}).*/, "$1");
+    setPrice(formattedValue);
+  };
 
   // For scanned flow, use product.category; for manual, use manualCategory
   const category = isManualEntry
@@ -50,37 +63,52 @@ export default function AddFoodScreen({ route }) {
     : product?.category || "default";
 
   // Function to save food item (works for both flows)
-  const handleSaveFood = async () => {
+  const handleSaveFood = useCallback( async () => {
+    let foodData;
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice)) {
+      Alert.alert("Invalid Price", "Please enter a valid price.");
+      return;
+    }
     if (isManualEntry) {
       if (!productName || !barcodeData || !expirationDate || !quantity) {
         Alert.alert("Missing Fields", "Please enter all details.");
         return;
       }
-      const foodData = {
+      foodData = {
         name: productName,
-        barcodeData: barcodeData,
+        code: product.code,
+        brand: product.brand || "Unknown",
         category: manualCategory,
         expirationDate: expirationDate.toISOString().split("T")[0],
         quantity,
+        manualEntry: isManualEntry,
+        price: parsedPrice,
       };
-      Alert.alert("Mock Save", "Food item would be saved with manual input!");
-      navigation.goBack();
     } else {
       if (!product?.name || !expirationDate || !quantity) {
         Alert.alert("Missing Fields", "Please enter all details.");
         return;
       }
-      const foodData = {
-        barcodeData: product.barcodeData,
+      foodData = {
+        code: product.code,
         name: product.name,
+        brand: product.brand,
         category: product.category || "default",
         expirationDate: expirationDate.toISOString().split("T")[0],
         quantity,
+        manualEntry: isManualEntry,
+        price: parsedPrice,
       };
-      Alert.alert("Mock Save", "Food item would be saved!");
-      navigation.goBack();
     }
-  };
+    axios
+      .post(`http://10.253.215.20:3000/addItem/${verifiedUser._id}`, foodData)
+      .then((response) => {
+        console.log(response.data);
+        Alert.alert("Success", "Food item saved successfully!");
+        navigation.navigate("Main", { screen: "Home" });
+      });
+  }, [price, product, productName, barcodeData, expirationDate, quantity, manualCategory, isManualEntry, verifiedUser, navigation, axios]);
 
   // Function to update quantity
   const updateQuantity = (value) => {
@@ -175,7 +203,7 @@ export default function AddFoodScreen({ route }) {
             Category: {(product?.category || "default").toUpperCase()}
           </Text>
           <Text style={[styles.foodDetails, { color: theme.text }]}>
-            Barcode: {product?.barcodeData || "N/A"}
+            Barcode: {product?.code || "N/A"}
           </Text>
         </View>
       )}
@@ -188,13 +216,30 @@ export default function AddFoodScreen({ route }) {
         onPress={() => setDatePickerVisibility(true)}
         style={[
           styles.datePicker,
-          { borderColor: theme.secondary, backgroundColor: theme.primary },
+          { borderColor: theme.primary, backgroundColor: theme.secondary },
         ]}
       >
         <Text style={{ color: theme.buttonText, fontWeight: "bold" }}>
           {expirationDate.toDateString()} 🗓
         </Text>
       </TouchableOpacity>
+
+      <Text style={[styles.label, { color: theme.text }]}>Price (USD):</Text>
+      <TextInput
+        style={[
+          styles.input,
+          {
+            color: theme.text,
+            borderColor: theme.primary,
+            backgroundColor: theme.secondary,
+          },
+        ]}
+        placeholder="Enter price in USD"
+        placeholderTextColor={theme.placeholderText}
+        keyboardType="numeric"
+        value={price}
+        onChangeText={handlePriceChange}
+      />
 
       {/* Date Picker Modal with custom iOS styles and a custom cancel button */}
       <DateTimePickerModal
@@ -221,9 +266,7 @@ export default function AddFoodScreen({ route }) {
             style={[styles.cancelButton, { backgroundColor: theme.danger }]}
             onPress={() => setDatePickerVisibility(false)}
           >
-            <Text
-              style={[styles.cancelButtonText, { color: theme.buttonText }]}
-            >
+            <Text style={[styles.cancelButtonText, { color: theme.text }]}>
               Cancel
             </Text>
           </TouchableOpacity>
@@ -262,8 +305,8 @@ export default function AddFoodScreen({ route }) {
       <Button
         mode="contained"
         onPress={handleSaveFood}
-        style={[styles.saveButton, { backgroundColor: theme.buttonBackground }]}
-        labelStyle={{ color: theme.buttonText, fontSize: 18 }}
+        style={[styles.saveButton, { backgroundColor: theme.secondary }]}
+        labelStyle={{ color: theme.text, fontSize: 18 }}
       >
         Save Food
       </Button>
