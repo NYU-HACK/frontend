@@ -104,7 +104,6 @@ export default function AddFoodScreen({ route }) {
     axios
       .post(`http://10.253.215.20:3000/addItem/${verifiedUser._id}`, foodData)
       .then((response) => {
-        console.log(response.data);
         Alert.alert("Success", "Food item saved successfully!");
         navigation.navigate("Main", { screen: "Home" });
       });
