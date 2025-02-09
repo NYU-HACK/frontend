@@ -1,4 +1,5 @@
 // services/auth.js
+import axios from "axios";
 import { auth } from "./config";
 import {
   signInWithEmailAndPassword,
@@ -15,9 +16,24 @@ import {
  */
 export const loginUser = async (email, password) => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    console.log(await userCredential.user.getIdToken())
-    return userCredential;
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    const token = await userCredential.user.getIdToken();
+    const response = await axios.post("http://10.253.215.20:3000/login", {
+      token,
+    });
+    if (response.data && response.data._id) {
+      // Return the user if backend validation is successful.
+      return response.data;
+    } else {
+      // Otherwise, sign out and throw an error.
+      await signOut(auth);
+      throw new Error("Backend token validation failed");
+    }
+    
   } catch (error) {
     throw error;
   }
@@ -30,10 +46,16 @@ export const loginUser = async (email, password) => {
  * @param {string} password
  * @returns {Promise} Resolves with the user credential or rejects with an error.
  */
-export const registerUser = async (email, password) => {
+export const registerUser = async (firstName, lastName, email, password, confirmPassword) => {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential;
+    const response = await axios.post("http://10.253.215.20:3000/signup", {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword
+    });
+    return response.data.signUpSuccessful;
   } catch (error) {
     throw error;
   }

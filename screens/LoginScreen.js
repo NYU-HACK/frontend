@@ -15,6 +15,7 @@ import { loginUser } from "../services/auth";
 import { useTheme } from "../context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
   const { theme, toggleTheme } = useTheme();
@@ -22,10 +23,12 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigation = useNavigation();
+  const { setVerifiedUser } = useAuth();
 
   const handleLogin = async () => {
     try {
-      await loginUser(email, password);
+      const userData = await loginUser(email, password);
+      setVerifiedUser(userData);
       // On successful login, the auth state listener in App.js will update the UI.
     } catch (error) {
       Alert.alert("Login Error", error.message);

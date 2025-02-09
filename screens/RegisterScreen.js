@@ -33,12 +33,21 @@ export default function RegisterScreen() {
     }
     try {
       // Assuming your registerUser function accepts an object with these fields.
-      await registerUser({ firstName, lastName, email, password });
-      Alert.alert(
-        "Registration Successful",
-        "Welcome aboard! You can now log in with your new credentials."
+      const response = await registerUser(
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword,
       );
-      navigation.navigate("Login");
+
+      if (response) {
+        Alert.alert(
+          "Registration Successful",
+          "Welcome aboard! You can now log in with your new credentials."
+        );
+        navigation.navigate("Login");
+      }
     } catch (error) {
       Alert.alert("Registration Error", error.message);
     }
@@ -54,7 +63,10 @@ export default function RegisterScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {/* Theme Toggle Button */}
-        <TouchableOpacity style={styles.themeToggleButton} onPress={toggleTheme}>
+        <TouchableOpacity
+          style={styles.themeToggleButton}
+          onPress={toggleTheme}
+        >
           <Ionicons
             name={isLightTheme ? "moon-outline" : "sunny-outline"}
             size={28}
@@ -67,8 +79,8 @@ export default function RegisterScreen() {
           <Image source={require("../assets/icon.png")} style={styles.logo} />
           <Text style={styles.heroTitle}>Join Food Wallet</Text>
           <Text style={styles.heroSubtitle}>
-            Sign up now and become part of a community dedicated to reducing food waste,
-            saving money, and making our world a greener place.
+            Sign up now and become part of a community dedicated to reducing
+            food waste, saving money, and making our world a greener place.
           </Text>
         </View>
 
@@ -125,8 +137,8 @@ export default function RegisterScreen() {
         {/* Persuasive Footer */}
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: theme.primary }]}>
-            Your journey towards a sustainable future starts here. Together, we can make a
-            difference—one meal at a time.
+            Your journey towards a sustainable future starts here. Together, we
+            can make a difference—one meal at a time.
           </Text>
         </View>
       </ScrollView>
